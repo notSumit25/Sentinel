@@ -1,0 +1,28 @@
+package org.example.ingestor.service;
+
+import org.example.ingestor.model.Metric;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.example.ingestor.util.Jsonutil;
+import java.util.Set;
+
+@Service
+public class ValidationService {
+
+
+    private final Jsonutil jsonutil;
+
+    ValidationService(Jsonutil jsonutil) {
+        this.jsonutil = jsonutil;
+    }
+
+    public Metric isValid(Object input) {
+        if(this.jsonutil.parseToMetric(input) == null) {
+            System.err.println("🚫 [DROP] Null Metric received.");
+            return null;
+        }
+        return this.jsonutil.parseToMetric(input);
+    }
+}
