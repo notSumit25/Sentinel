@@ -1,0 +1,78 @@
+version: "3.8"
+
+services:
+  # Redis service for caching and message queue
+  redis:
+    image: redis:7-alpine
+    container_name: sentinel-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+    command: redis-server --appendonly yes
+    networks:
+      - sentinel-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ClickHouse service for time-series metrics storage
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: sentinel-clickhouse
+    ports:
+      - "8123:8123" # HTTP interface
+      - "9000:9000" # Native TCP protocol
+      - "9009:9009" # Keeper TCP protocol
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+      - ./infra/clickhouse:/docker-entrypoint-initdb.d
+    environment:
+      - CLICKHOUSE_DB=sentinel
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER:-default}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-}
+    networks:
+      - sentinel-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - redis
+
+  # Java Ingestor service (optional)
+  # ingestor:
+  #   build:
+  #     context: ./Ingestor
+  #     dockerfile: Dockerfile
+  #   container_name: sentinel-ingestor
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - SPRING_DATASOURCE_URL=jdbc:clickhouse://clickhouse:8123/sentinel
+  #     - SPRING_DATASOURCE_USERNAME=${CLICKHOUSE_USER:-default}
+  #     - SPRING_DATASOURCE_PASSWORD=${CLICKHOUSE_PASSWORD:-}
+  #     - REDIS_URL=redis://redis:6379
+  #   networks:
+  #     - sentinel-network
+  #   depends_on:
+  #     - clickhouse
+  #     - redis
+  #   restart: unless-stopped
+
+volumes:
+  redis_data:
+    driver: local
+  clickhouse_data:
+    driver: local
+
+networks:
+  sentinel-network:
+    driver: bridge
