@@ -1,0 +1,21 @@
+<clickhouse>
+  <logger>
+    <level>information</level>
+  </logger>
+
+  <http_port>8123</http_port>
+  <tcp_port>9000</tcp_port>
+  <keeper_server>
+    <tcp_port>9009</tcp_port>
+  </keeper_server>
+
+  <listen_host>::</listen_host>
+
+  <max_connections>2048</max_connections>
+  <keep_alive_timeout>3</keep_alive_timeout>
+
+  <default_database>sentinel</default_database>
+
+  <timezone>UTC</timezone>
+
+</clickhouse>
