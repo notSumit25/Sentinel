@@ -47,25 +47,29 @@ services:
     depends_on:
       - redis
 
-  # Java Ingestor service (optional)
-  # ingestor:
-  #   build:
-  #     context: ./Ingestor
-  #     dockerfile: Dockerfile
-  #   container_name: sentinel-ingestor
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     - SPRING_DATASOURCE_URL=jdbc:clickhouse://clickhouse:8123/sentinel
-  #     - SPRING_DATASOURCE_USERNAME=${CLICKHOUSE_USER:-default}
-  #     - SPRING_DATASOURCE_PASSWORD=${CLICKHOUSE_PASSWORD:-}
-  #     - REDIS_URL=redis://redis:6379
-  #   networks:
-  #     - sentinel-network
-  #   depends_on:
-  #     - clickhouse
-  #     - redis
-  #   restart: unless-stopped
+  # 3. Java Ingestor Service
+  ingestor:
+    build:
+      context: ./Ingestor      # Points to the 'Ingestor' subfolder
+      dockerfile: Dockerfile
+    container_name: sentinel-ingestor
+    ports:
+      - "8080:8080"
+    environment:
+      # ClickHouse Config
+      - SPRING_DATASOURCE_URL=jdbc:clickhouse://clickhouse:8123/sentinel
+      - SPRING_DATASOURCE_USERNAME=default
+      - SPRING_DATASOURCE_PASSWORD=
+
+      # Redis Config (Must match your Java properties)
+      - SPRING_DATA_REDIS_HOST=redis   # Matches the service name 'redis' above
+      - SPRING_DATA_REDIS_PORT=6379
+    networks:
+      - sentinel-network
+    depends_on:
+      - clickhouse
+      - redis
+    restart: unless-stopped
 
 volumes:
   redis_data:
