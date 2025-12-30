@@ -35,7 +35,8 @@ services:
     environment:
       - CLICKHOUSE_DB=sentinel
       - CLICKHOUSE_USER=${CLICKHOUSE_USER:-default}
-      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-}
+      - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
+
     networks:
       - sentinel-network
     restart: unless-stopped
@@ -56,13 +57,13 @@ services:
     ports:
       - "8080:8080"
     environment:
-      # ClickHouse Config
-      - SPRING_DATASOURCE_URL=jdbc:clickhouse://clickhouse:8123/sentinel
+      # Use a clean URL without parameters
+      - SPRING_DATASOURCE_URL=jdbc:clickhouse://clickhouse:8123/sentinel?compress_algorithm=none
+      # Explicitly define these two - Spring will prioritize these
       - SPRING_DATASOURCE_USERNAME=default
       - SPRING_DATASOURCE_PASSWORD=
 
-      # Redis Config (Must match your Java properties)
-      - SPRING_DATA_REDIS_HOST=redis   # Matches the service name 'redis' above
+      - SPRING_DATA_REDIS_HOST=redis
       - SPRING_DATA_REDIS_PORT=6379
     networks:
       - sentinel-network
@@ -70,7 +71,6 @@ services:
       - clickhouse
       - redis
     restart: unless-stopped
-
 volumes:
   redis_data:
     driver: local

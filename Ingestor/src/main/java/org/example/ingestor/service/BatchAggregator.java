@@ -17,7 +17,7 @@ public class BatchAggregator {
 
     // Thread-safe buffer
     private final List<Metric> buffer = Collections.synchronizedList(new ArrayList<>());
-    private final int BATCH_SIZE_THRESHOLD = 500;
+    private final int BATCH_SIZE_THRESHOLD = 50;
 
     public BatchAggregator(ClickHouseService clickHouseRepository) {
         this.clickHouseRepository = clickHouseRepository;

@@ -5,6 +5,7 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/Ingestor/pom.xml" />
+        <option value="$PROJECT_DIR$/QueryService/pom.xml" />
       </list>
     </option>
   </component>
