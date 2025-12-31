@@ -70,20 +70,42 @@ services:
     restart: unless-stopped
 
   # 4. Next.js Frontend
-  frontend:
+  # frontend:
+  #   build:
+  #     context: ./sentinel-frontend
+  #     dockerfile: Dockerfile
+  #   container_name: sentinel-frontend
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - NEXT_PUBLIC_API_BASE=http://sentinel-query-api:8081
+  #     - NEXT_PUBLIC_TENANT_ID=org_test
+  #   networks:
+  #     - sentinel-network
+  #   depends_on:
+  #     - ingestor
+  #   restart: unless-stopped
+
+  # 5. Query Service
+  query-service:
     build:
-      context: ./sentinel-frontend
+      context: ./QueryService
       dockerfile: Dockerfile
-    container_name: sentinel-frontend
+    container_name: sentinel-query-service
     ports:
-      - "3000:3000"
+      - "8082:8082"
     environment:
-      - NEXT_PUBLIC_API_BASE=http://sentinel-query-api:8081
-      - NEXT_PUBLIC_TENANT_ID=org_test
+      - SPRING_DATASOURCE_URL=jdbc:clickhouse://clickhouse:8123/sentinel?compress_algorithm=none
+      - SPRING_DATASOURCE_USERNAME=default
+      - SPRING_DATASOURCE_PASSWORD=
+
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
     networks:
       - sentinel-network
     depends_on:
-      - ingestor
+      - clickhouse
+      - redis
     restart: unless-stopped
 
 volumes:
