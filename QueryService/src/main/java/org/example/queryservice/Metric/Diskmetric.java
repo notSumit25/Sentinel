@@ -18,7 +18,21 @@ public class Diskmetric {
     }
 
     @GetMapping("/metrics")
-    public List<MetricResponse> getGlobalDiskMetrics() {
+    public List<MetricResponse> getGlobalDiskMetrics(@RequestParam(required = false) String hostId) {
+        // If hostId is provided as query parameter, fetch metrics for that specific host
+        if (hostId != null && !hostId.trim().isEmpty()) {
+            String sql = "SELECT ts, disk FROM sentinel.sentinel_vm_metrics WHERE tenant_id = ? ORDER BY ts DESC LIMIT 100";
+            return jdbcservice.getJdbcTemplate().query(
+                    sql,
+                    (rs, rowNum) -> new MetricResponse(
+                            rs.getString("ts"),
+                            rs.getDouble("disk")
+                    ),
+                    hostId
+            );
+        }
+        
+        // Otherwise, fetch all metrics
         String sql = "SELECT ts, disk FROM sentinel.sentinel_vm_metrics ORDER BY ts DESC LIMIT 100";
 
         return jdbcservice.getJdbcTemplate().query(

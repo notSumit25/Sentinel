@@ -18,7 +18,21 @@ public class Rammetric {
     }
 
     @GetMapping("/metrics")
-    public List<MetricResponse> getGlobalRamMetrics() {
+    public List<MetricResponse> getGlobalRamMetrics(@RequestParam(required = false) String hostId) {
+        // If hostId is provided as query parameter, fetch metrics for that specific host
+        if (hostId != null && !hostId.trim().isEmpty()) {
+            String sql = "SELECT ts, memory FROM sentinel.sentinel_vm_metrics WHERE tenant_id = ? ORDER BY ts DESC LIMIT 100";
+            return jdbcservice.getJdbcTemplate().query(
+                    sql,
+                    (rs, rowNum) -> new MetricResponse(
+                            rs.getString("ts"),
+                            rs.getDouble("memory")
+                    ),
+                    hostId
+            );
+        }
+        
+        // Otherwise, fetch all metrics
         String sql = "SELECT ts, memory FROM sentinel.sentinel_vm_metrics ORDER BY ts DESC LIMIT 100";
 
         return jdbcservice.getJdbcTemplate().query(
