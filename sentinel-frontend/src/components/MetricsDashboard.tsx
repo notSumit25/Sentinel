@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState ,useMemo} from "react";
 import { useUser } from "@clerk/nextjs";
 import {
   LineChart,
@@ -19,6 +19,12 @@ const MetricsDashboard = () => {
   const [diskMetrics, setDiskMetrics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [DcpuMetrics, setDCpuMetrics] = useState([]);
+  const [DramMetrics, setDRamMetrics] = useState([]);
+  const [DdiskMetrics, setDDiskMetrics] = useState([]);
+
+  // Filter State
+  const [selectedHost, setSelectedHost] = useState<string>("all");
 
   useEffect(() => {
     if (!isLoaded || !user?.emailAddresses[0]?.emailAddress) {
@@ -32,6 +38,40 @@ const MetricsDashboard = () => {
     // Fetch metrics for the current user's host ID (email)
     const API_BASE_URL =
       process.env.NEXT_PUBLIC_QUERY_SERVICE_URL || "http://localhost:8082";
+
+    const fecthDashboardMetrics = async () => {
+      try {
+        const [cpuRes, ramRes, diskRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/dashboard/cpu/${userEmail}`),
+          fetch(`${API_BASE_URL}/dashboard/ram/${userEmail}`),
+          fetch(`${API_BASE_URL}/dashboard/disk/${userEmail}`),
+        ]);
+        if (!cpuRes.ok || !ramRes.ok || !diskRes.ok) {
+          throw new Error("Failed to fetch metrics");
+        }
+        const [DcpuData, DramData, DdiskData] = await Promise.all([
+            cpuRes.json(),
+            ramRes.json(),
+            diskRes.json(),
+        ]);
+        console.log("Dashboard CPU Metrics:", DcpuData);
+        console.log("Dashboard RAM Metrics:", DramData);
+        console.log("Dashboard Disk Metrics:", DdiskData);
+
+        setDCpuMetrics(DcpuData);
+        setDRamMetrics(DramData);
+        setDDiskMetrics(DdiskData);
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : "Failed to load metrics";
+
+        setError(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fecthDashboardMetrics();
 
     const fetchMetrics = async () => {
       try {
@@ -56,7 +96,7 @@ const MetricsDashboard = () => {
         console.log("CPU Metrics:", cpuData);
         console.log("RAM Metrics:", ramData);
         console.log("Disk Metrics:", diskData);
-
+        console.log("User Email:", userEmail);
         setCpuMetrics(cpuData);
         setRamMetrics(ramData);
         setDiskMetrics(diskData);
@@ -70,8 +110,21 @@ const MetricsDashboard = () => {
       }
     };
 
-    fetchMetrics();
+    // fetchMetrics();
   }, [isLoaded, user?.emailAddresses]);
+
+
+  const hostList = useMemo(() => {
+    const hosts = DcpuMetrics
+        .map((m: any) => m.hostId)
+        .filter((id): id is string => id !== null && id !== undefined);
+
+    return Array.from(new Set(hosts));
+  }, [DcpuMetrics]);
+
+  const filteredCpu = selectedHost === "all" ? DcpuMetrics : DcpuMetrics.filter((m: any) => m.hostId === selectedHost);
+  const filteredRam = selectedHost === "all" ? DramMetrics : DramMetrics.filter((m: any) => m.hostId === selectedHost);
+  const filteredDisk = selectedHost === "all" ? DdiskMetrics : DdiskMetrics.filter((m: any) => m.hostId === selectedHost);
 
   const Card = ({
     title,
@@ -166,6 +219,39 @@ const MetricsDashboard = () => {
             {loading ? "Loading..." : "Live"}
           </span>
         </div>
+
+        {/* 3. Host ID Filter Dropdown */}
+        <div className="flex items-center gap-3 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg shadow-sm">
+          <div className="flex items-center gap-2">
+            {/* Minimalist Dot Indicator */}
+            <div className={`w-2 h-2 rounded-full ${selectedHost === 'all' ? 'bg-blue-500' : 'bg-green-500'} animate-pulse`} />
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-500">
+              Source:
+            </label>
+          </div>
+
+          <div className="relative">
+            <select
+                className="appearance-none bg-transparent pl-1 pr-8 py-0.5 text-sm font-semibold text-slate-700 focus:outline-none cursor-pointer border-none ring-0 focus:ring-0  tracking-wide antialiased"
+                value={selectedHost}
+                onChange={(e) => setSelectedHost(e.target.value)}
+            >
+              <option value="all">All Managed Hosts</option>
+              {hostList.map((host, index) => (
+                  <option key={`${host}-${index}`} value={host}>
+                    Host {host}
+                  </option>
+              ))}
+            </select>
+
+            {/* Custom Dropdown Arrow */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-1 text-slate-400">
+              <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Error State */}
@@ -179,10 +265,10 @@ const MetricsDashboard = () => {
 
       {/* Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="CPU Usage" data={cpuMetrics} dataKey="cpu" />
-        <Card title="RAM Usage" data={ramMetrics} dataKey="cpu" />
+        <Card title="CPU Usage" data={DcpuMetrics} dataKey="cpu" />
+        <Card title="RAM Usage" data={DramMetrics} dataKey="cpu" />
         <div className="lg:col-span-2">
-          <Card title="Disk Usage" data={diskMetrics} dataKey="cpu" />
+          <Card title="Disk Usage" data={DdiskMetrics} dataKey="cpu" />
         </div>
       </div>
     </section>
