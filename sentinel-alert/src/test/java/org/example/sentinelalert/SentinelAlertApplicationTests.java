@@ -1,10 +1,10 @@
-package org.example.sentinelalertsystem;
+package org.example.sentinelalert;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class SentinelAlertSystemApplicationTests {
+class SentinelAlertApplicationTests {
 
     @Test
     void contextLoads() {

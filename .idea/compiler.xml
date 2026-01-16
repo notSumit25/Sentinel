@@ -3,22 +3,41 @@
   <component name="CompilerConfiguration">
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
-      <profile name="Annotation profile for QueryService" enabled="true">
+      <profile name="Gradle Imported" enabled="true">
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/org.projectlombok/lombok/1.18.42/8365263844ebb62398e0dc33057ba10ba472d3b8/lombok-1.18.42.jar" />
+        </processorPath>
+        <module name="Sentinel-agent.main" />
+      </profile>
+      <profile name="Annotation profile for sentinel-alert" enabled="true">
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.42/lombok-1.18.42.jar" />
         </processorPath>
+        <module name="sentinel-alert" />
         <module name="Ingestor" />
         <module name="QueryService" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="Sentinel-agent" target="17" />
+      <module name="sentinel-alert-system" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="Ingestor" options="-parameters" />
       <module name="QueryService" options="-parameters" />
+      <module name="Sentinel-agent" options="-parameters" />
+      <module name="Sentinel-agent.main" options="-parameters" />
+      <module name="Sentinel-agent.test" options="-parameters" />
+      <module name="sentinel-alert" options="-parameters" />
+      <module name="sentinel-alert-system" options="-parameters" />
+      <module name="sentinel-alert-system.main" options="-parameters" />
+      <module name="sentinel-alert-system.test" options="-parameters" />
     </option>
   </component>
 </project>

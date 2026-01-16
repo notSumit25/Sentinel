@@ -1,13 +1,13 @@
-package org.example.sentinelalertsystem;
+package org.example.sentinelagent;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class SentinelAlertSystemApplication {
+public class SentinelAgentApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(SentinelAlertSystemApplication.class, args);
+        SpringApplication.run(SentinelAgentApplication.class, args);
     }
 
 }
