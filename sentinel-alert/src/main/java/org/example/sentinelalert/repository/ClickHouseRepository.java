@@ -51,7 +51,9 @@ public class ClickHouseRepository {
             threshold,
             operator,
             severity,
-            enabled
+            enabled,
+            host_id,
+            tenant_id
         FROM alert_rules
         WHERE enabled = 1
     """;
@@ -64,6 +66,8 @@ public class ClickHouseRepository {
             r.setOperator(rs.getString("operator"));
             r.setSeverity(rs.getString("severity"));
             r.setEnabled(rs.getInt("enabled") == 1);
+            r.setHostId(rs.getString("host_id"));
+            r.setTenantId(rs.getString("tenant_id"));
             return r;
         });
     }

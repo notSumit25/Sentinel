@@ -24,7 +24,9 @@ CREATE TABLE IF NOT EXISTS sentinel.alert_rules
     threshold   Float32,
     operator    String,      -- >, <, >=, <=
     severity    String,      -- LOW, MEDIUM, CRITICAL
-    enabled     UInt8        -- 1 = enabled, 0 = disabled
+    enabled     UInt8,      -- 1 = enabled, 0 = disabled
+    tenant_id   String,
+    host_id     String
 )
     ENGINE = MergeTree
     ORDER BY rule_id;
@@ -43,22 +45,3 @@ CREATE TABLE IF NOT EXISTS sentinel.alerts
     ENGINE = MergeTree
     ORDER BY alert_id;
 
-INSERT INTO sentinel.alert_rules VALUES
-    (
-        'cpu_high',
-        'cpu',
-        80,
-        '>',
-        'CRITICAL',
-        1
-    );
-
-INSERT INTO sentinel.alert_rules VALUES
-    (
-        'disk_high',
-        'disk',
-        0,
-        '>',
-        'CRITICAL',
-        1
-    );

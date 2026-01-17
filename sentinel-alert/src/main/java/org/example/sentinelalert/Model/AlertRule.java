@@ -10,4 +10,6 @@ public class AlertRule {
     private String operator;
     private String severity;
     private boolean enabled;
+    private String tenantId;
+    private String hostId;
 }

@@ -19,7 +19,7 @@ public class AlertScheduler {
     private final ClickHouseRepository repo;
     private final AlertService alertService;
 
-    @Scheduled(fixedRate = 60000) // every 1 min
+    @Scheduled(fixedRate = 10*60000) // every 10 min
     public void runAlerts() {
         List<Metric> metrics = repo.fetchLatestMetrics();
         List<AlertRule> rules = repo.fetchRules();

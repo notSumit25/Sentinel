@@ -1,6 +1,6 @@
 package org.example.queryservice;
 
-import org.example.queryservice.MetricResponse;
+import org.example.queryservice.Response.MetricResponse;
 import org.example.queryservice.service.Jdbcservice;
 import org.springframework.web.bind.annotation.*;
 

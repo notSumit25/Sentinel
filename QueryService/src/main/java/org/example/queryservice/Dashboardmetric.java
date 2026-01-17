@@ -1,6 +1,6 @@
 package org.example.queryservice;
+import org.example.queryservice.Response.HostMetricReponse;
 import org.example.queryservice.service.Jdbcservice;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
