@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package queryservice;
+
+option java_multiple_files = true;
+option java_package = "org.example.queryservice.grpc";
+option java_outer_classname = "QueryServiceProto";
+
+// Well-known types
+import "google/protobuf/empty.proto";
+import "google/protobuf/wrappers.proto";
+
+// Generic request types
+message TenantRequest {
+  string tenant_id = 1;
+}
+
+message HostRequest {
+  string tenant_id = 1;
+  string host_id = 2;
+}
+
+message HistoryRequest {
+  string host_id = 1;
+  int32 minutes = 2; // lookback window in minutes
+}
+
+message TenantWindowRequest {
+  string tenant_id = 1;
+  int32 minutes = 2; // lookback window in minutes
+}
+
+// Metric points and collections
+message MetricResponse {
+  string ts = 1;   // ISO-8601 timestamp (as stored)
+  double value = 2;
+}
+
+message MetricSeries {
+  repeated MetricResponse metrics = 1;
+}
+
+message HostMetric {
+  string ts = 1;
+  double value = 2;
+  string host_id = 3;
+}
+
+message HostMetrics {
+  repeated HostMetric metrics = 1;
+}
+
+message HostsResponse {
+  repeated string host_ids = 1;
+}
+
+// gRPC service mirroring existing REST endpoints
+service QueryService {
+  // Hosts
+  rpc ListHosts(google.protobuf.Empty) returns (HostsResponse);
+  rpc ListTenantHosts(TenantRequest) returns (HostsResponse);
+
+  // CPU metrics
+  rpc GetCpuMetricsTenant(TenantRequest) returns (MetricSeries);
+  rpc GetTenantAverageCpu(TenantWindowRequest) returns (google.protobuf.DoubleValue);
+  rpc GetTenantHostCpu(HostRequest) returns (MetricSeries);
+  rpc GetCpuHistory(HistoryRequest) returns (MetricSeries);
+  rpc GetDashboardCpu(TenantRequest) returns (HostMetrics);
+
+  // RAM metrics
+  rpc GetRamMetricsTenant(TenantRequest) returns (MetricSeries);
+  rpc GetTenantAverageRam(TenantWindowRequest) returns (google.protobuf.DoubleValue);
+  rpc GetTenantHostRam(HostRequest) returns (MetricSeries);
+  rpc GetRamHistory(HistoryRequest) returns (MetricSeries);
+  rpc GetDashboardRam(TenantRequest) returns (HostMetrics);
+
+  // Disk metrics
+  rpc GetDiskMetricsTenant(TenantRequest) returns (MetricSeries);
+  rpc GetTenantAverageDisk(TenantWindowRequest) returns (google.protobuf.DoubleValue);
+  rpc GetTenantHostDisk(HostRequest) returns (MetricSeries);
+  rpc GetDiskHistory(HistoryRequest) returns (MetricSeries);
+  rpc GetDashboardDisk(TenantRequest) returns (HostMetrics);
+}
+
+// Alerts service
+message Alert {
+  string alert_id = 1;
+  string rule_id = 2;
+  string metric_name = 3;
+  double metric_value = 4;
+  string severity = 5;
+  string ts = 6; // ISO-8601 timestamp
+  string tenant_id = 7;
+  string host_id = 8;
+}
+
+message AlertList {
+  repeated Alert alerts = 1;
+}
+
+service AlertService {
+  rpc ListAlertsByTenant(TenantRequest) returns (AlertList);
+  rpc ListAlertsByTenantHost(HostRequest) returns (AlertList);
+}
+
+// Alert rules service
+message AlertRule {
+  string rule_id = 1;
+  string metric_name = 2;
+  float threshold = 3;
+  string operator = 4;
+  string severity = 5;
+  int32 enabled = 6;
+  string tenant_id = 7;
+  string host_id = 8;
+}
+
+message AlertRuleList {
+  repeated AlertRule rules = 1;
+}
+
+message CreateAlertRuleRequest {
+  AlertRule rule = 1;
+}
+
+message DeleteAlertRuleRequest {
+  string rule_id = 1;
+}
+
+message UpdateAlertRuleRequest {
+  string rule_id = 1;
+  AlertRule rule = 2;
+}
+
+service AlertRuleService {
+  rpc ListAlertRulesByTenant(TenantRequest) returns (AlertRuleList);
+  rpc CreateAlertRule(CreateAlertRuleRequest) returns (google.protobuf.Empty);
+  rpc DeleteAlertRule(DeleteAlertRuleRequest) returns (google.protobuf.Empty);
+  rpc UpdateAlertRule(UpdateAlertRuleRequest) returns (google.protobuf.Empty);
+}

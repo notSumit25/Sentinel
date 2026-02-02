@@ -1,4 +1,4 @@
-package org.example.queryservice;
+package org.example.queryservice.Metric;
 
 import org.example.queryservice.Response.MetricResponse;
 import org.example.queryservice.service.Jdbcservice;

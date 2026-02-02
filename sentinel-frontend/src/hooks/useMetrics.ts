@@ -10,9 +10,6 @@ export function useMetrics(userEmail?: string) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const API_BASE =
-        process.env.NEXT_PUBLIC_QUERY_SERVICE_URL || "http://localhost:8082";
-
     useEffect(() => {
         if (!userEmail) {
             setLoading(false);
@@ -23,23 +20,23 @@ export function useMetrics(userEmail?: string) {
             try {
                 setLoading(true);
 
-                const [cpuRes, ramRes, diskRes] = await Promise.all([
-                    fetch(`${API_BASE}/dashboard/cpu/${userEmail}`),
-                    fetch(`${API_BASE}/dashboard/ram/${userEmail}`),
-                    fetch(`${API_BASE}/dashboard/disk/${userEmail}`),
-                ]);
+                const res = await fetch(
+                    `/api/dashboard?tenantId=${encodeURIComponent(userEmail)}`,
+                );
 
-                if (!cpuRes.ok || !ramRes.ok || !diskRes.ok) {
+                if (!res.ok) {
                     throw new Error("Failed to fetch metrics");
                 }
 
-                const cpuData = await cpuRes.json();
-                const ramData = await ramRes.json();
-                const diskData = await diskRes.json();
+                const data: {
+                    cpu: Metric[];
+                    ram: Metric[];
+                    disk: Metric[];
+                } = await res.json();
 
-                setCpu(cpuData);
-                setRam(ramData);
-                setDisk(diskData);
+                setCpu(data.cpu);
+                setRam(data.ram);
+                setDisk(data.disk);
             } catch (e) {
                 setError(e instanceof Error ? e.message : "Unknown error");
             } finally {
@@ -48,11 +45,11 @@ export function useMetrics(userEmail?: string) {
         };
 
         fetchDashboardMetrics();
-    }, [userEmail, API_BASE]);
+    }, [userEmail]);
 
     const hosts = useMemo(() => {
         return Array.from(
-            new Set(cpu.map((m) => m.hostId).filter(Boolean))
+            new Set(cpu.map((m) => m.hostId).filter(Boolean)),
         );
     }, [cpu]);
 

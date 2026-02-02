@@ -1,12 +1,8 @@
 package org.example.ingestor.service;
 
 import org.example.ingestor.model.Metric;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.example.ingestor.util.Jsonutil;
-import java.util.Set;
 
 @Service
 public class ValidationService {

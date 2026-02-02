@@ -37,6 +37,7 @@ public class RedisConsumer implements CommandLineRunner {
         while (true) {
             try {
                 // 1. Read from Stream
+                @SuppressWarnings("unchecked")
                 var entries = redisTemplate.opsForStream().read(
                         StreamReadOptions.empty().count(1).block(Duration.ofMillis(2000)), // Wait up to 2s
                         StreamOffset.create(STREAM_KEY, ReadOffset.from(lastID))

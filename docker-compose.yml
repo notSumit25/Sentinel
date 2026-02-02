@@ -92,11 +92,13 @@ services:
     restart: unless-stopped
 
 
-#   4. Next.js Frontend
+#   4. Next.js Frontend (calls QueryService via gRPC)
   frontend:
     build:
-      context: ./sentinel-frontend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: sentinel-frontend/Dockerfile
+      args:
+        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     container_name: sentinel-frontend
     ports:
       - "3001:3000"
@@ -106,6 +108,8 @@ services:
       - NEXT_PUBLIC_API_BASE=http://query-service:8082
       - NEXT_PUBLIC_ALERT_BASE=http://alert-service:8085
       - NEXT_PUBLIC_TENANT_ID=org_test
+      - QUERY_SERVICE_GRPC_TARGET=query-service:9090
+      - QUERY_SERVICE_PROTO_PATH=/app/proto/queryservice.proto
     networks:
       - sentinel-network
     depends_on:
@@ -114,7 +118,7 @@ services:
     restart: unless-stopped
 
 
-    # 5. Query Service
+    # 5. Query Service (REST 8082, gRPC 9090)
   query-service:
     build:
       context: ./QueryService
@@ -122,6 +126,7 @@ services:
     container_name: sentinel-query-service
     ports:
       - "8082:8082"
+      - "9090:9090"
     environment:
       - SPRING_DATASOURCE_URL=jdbc:clickhouse://clickhouse:8123/sentinel?compress_algorithm=none
       - SPRING_DATASOURCE_USERNAME=default
